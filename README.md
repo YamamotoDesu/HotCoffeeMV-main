@@ -340,3 +340,104 @@ struct AddCoffeeOrderScreen: View {
     AddCoffeeOrderScreen(orders: .constant([]))
 }
 ```
+
+## Aggregate Model/DataStore in Views
+
+CoffeeStore.swift
+
+```swift
+import Foundation
+
+@Observable
+class CoffeeStore {
+    
+    let httpClient: HTTPClient
+
+    var orders: [CoffeeOrder] = []
+
+    init(httpClient: HTTPClient) {
+        self.httpClient = httpClient
+    }
+
+    func loadOrders() async throws {
+        let resource = Resource(url: APIs.orders.url, modelType: [CoffeeOrder].self)
+        orders = try await httpClient.load(resource)
+    }
+
+    func placeOrder(coffeeOrder: CoffeeOrder) async throws {
+
+        let coffeeOrderData = try JSONEncoder().encode(coffeeOrder)
+
+        let resource = Resource(url: APIs.addOrder.url, method: .post(coffeeOrderData), modelType: CoffeeOrder.self)
+        let savedCoffeeOrder = try await httpClient.load(resource)
+        orders.append(savedCoffeeOrder)
+    }
+}
+```
+
+HotCoffeeApp.swift
+
+```swift
+import SwiftUI
+
+@main
+struct HotCoffeeApp: App {
+    var body: some Scene {
+        WindowGroup {
+            NavigationStack {
+                CoffeeOrderListScreen()
+            }.environment(CoffeeStore(httpClient: HTTPClient()))
+        }
+    }
+}
+```
+
+CoffeeOrderListScreen.swift
+
+```swift
+import SwiftUI
+
+struct CoffeeOrderListScreen: View {
+
+    @Environment(CoffeeStore.self) private var coffeeStore
+    @State private var isPresented: Bool = false
+
+    var body: some View {
+        List(coffeeStore.orders) { order in
+            NavigationLink(value: order) {
+                Text(order.name)
+            }
+        }
+        .navigationDestination(for: CoffeeOrder.self, destination: { coffeeOrder in
+            CoffeeDetailScreen(coffeeOrder: coffeeOrder)
+        })
+        .task {
+            do {
+                try await coffeeStore.loadOrders()
+            } catch {
+                print(error.localizedDescription)
+            }
+        }.navigationTitle("Orders")
+            .toolbar(content: {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button("Add Order") {
+                        isPresented = true
+                    }
+                }
+            })
+            .sheet(isPresented: $isPresented, content: {
+
+                //AddCoffeeOrderScreen(orders: $orders)
+            })
+    }
+}
+
+#Preview {
+    NavigationStack {
+        CoffeeOrderListScreen()
+            .environment(CoffeeStore(httpClient: HTTPClient()))
+
+    }
+}
+
+```
