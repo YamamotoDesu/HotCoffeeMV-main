@@ -8,8 +8,8 @@
 import SwiftUI
 
 struct AddCoffeeOrderScreen: View {
-    
-    let addOrderVM: AddOrderViewModel
+
+    @Environment(CoffeeStore.self) private var coffeeStore
     @Environment(\.dismiss) private var dismiss
     
     @State private var name: String = ""
@@ -21,7 +21,18 @@ struct AddCoffeeOrderScreen: View {
     private var isFormValid: Bool {
         return true 
     }
-    
+
+    private func placeOrder() async {
+
+        do {
+            let order = CoffeeOrder(name: name, coffeeName: coffeeName, total: total, size: size)
+            try await coffeeStore.placeOrder(coffeeOrder: order)
+        } catch {
+            print(error)
+        }
+
+    }
+
     var body: some View {
         Form {
             TextField("Name", text: $name)
@@ -41,13 +52,10 @@ struct AddCoffeeOrderScreen: View {
                 }.buttonStyle(.borderedProminent)
                     .task(id: saving) {
                         if saving {
-                            do {
-                                try await addOrderVM.placeOrder(name: name, coffeeName: coffeeName, total: total, size: size)
-                                saving = false
-                                dismiss()
-                            } catch {
-                                print(error.localizedDescription)
-                            }
+                            await placeOrder()
+
+                            saving = false
+                            dismiss()
                         }
                     }
                 
@@ -58,5 +66,6 @@ struct AddCoffeeOrderScreen: View {
 }
 
 #Preview {
-    AddCoffeeOrderScreen(addOrderVM: AddOrderViewModel(httpClient: HTTPClient(), onSave: { _ in }))
+    AddCoffeeOrderScreen()
+        .environment(CoffeeStore(httpClient: HTTPClient()))
 }
