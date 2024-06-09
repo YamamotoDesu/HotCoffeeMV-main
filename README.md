@@ -444,3 +444,37 @@ struct CoffeeOrderListScreen: View {
 
 ## Bounded Context
 <img width="782" alt="image" src="https://github.com/YamamotoDesu/HotCoffeeMV-main/assets/47273077/3aee9693-bd19-40da-a4c1-699058d31a7b">
+
+```swift
+import SwiftUI
+
+struct EmployeeManagementScreen: View {
+
+    @Environment(OrderingStore.self) private var orderingStore
+    @Environment(EmployeeManagementStore.self) private var employeeManagementStore
+
+    var body: some View {
+        List {
+            Section("Orders") {
+                // Better to use OrderListView(orderingStore.stores)
+                ForEach(orderingStore.orders) { order in
+                    Text(order.name)
+                }
+            }
+
+            Section("Employees") {
+                // Better to use EmployeeListView(employeeManagementStore.employees)
+                ForEach(employeeManagementStore.employees) { employee in
+                    Text(employee.name)
+                }
+            }
+        }
+    }
+}
+
+#Preview {
+    EmployeeManagementScreen()
+        .environment(EmployeeManagementStore())
+        .environment(OrderingStore(httpClient: HTTPClient()))
+}
+```
