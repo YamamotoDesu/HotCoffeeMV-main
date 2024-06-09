@@ -478,3 +478,8 @@ struct EmployeeManagementScreen: View {
         .environment(OrderingStore(httpClient: HTTPClient()))
 }
 ```
+
+## Screen vs View
+
+<img width="751" alt="image" src="https://github.com/YamamotoDesu/HotCoffeeMV-main/assets/47273077/ff15b413-73e0-4fe8-a592-5d0a383d8f00">
+
