@@ -483,3 +483,5 @@ struct EmployeeManagementScreen: View {
 
 <img width="751" alt="image" src="https://github.com/YamamotoDesu/HotCoffeeMV-main/assets/47273077/ff15b413-73e0-4fe8-a592-5d0a383d8f00">
 
+<img width="573" alt="image" src="https://github.com/YamamotoDesu/HotCoffeeMV-main/assets/47273077/c39f3415-6742-4692-bc40-05c22b22cd59">
+
